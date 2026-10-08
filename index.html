@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OpenJarvis | Local AI Infrastructure</title>
+    <meta
+      name="description"
+      content="OpenJarvis brings private, local-first AI systems to life with offline models, agentic workflows, memory, and optimization tools."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="container nav">
+        <div class="brand">
+          <div class="brand-mark">O</div>
+          <span>OpenJarvis</span>
+        </div>
+        <nav class="nav-links" aria-label="Main navigation">
+          <a href="#features">Features</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#why-it-matters">Why it matters</a>
+          <a href="#callout">Get started</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <span class="eyebrow">Local-first AI operating system</span>
+            <h1>Run personal AI directly on your own hardware.</h1>
+            <p>
+              OpenJarvis is an open-source framework for building private,
+              customizable, and efficient AI systems that work locally while
+              remaining flexible enough to use cloud models when needed.
+            </p>
+            <div class="hero-actions">
+              <a class="primary" href="#features">Explore features</a>
+              <a class="secondary" href="https://github.com/open-jarvis/OpenJarvis" target="_blank" rel="noreferrer">View GitHub</a>
+            </div>
+            <div class="hero-metrics" aria-label="OpenJarvis metrics">
+              <div>
+                <strong data-target="6">0</strong>
+                <span>inference engines</span>
+              </div>
+              <div>
+                <strong data-target="12">0</strong>
+                <span>AI task types</span>
+              </div>
+              <div>
+                <strong data-target="100">0</strong>
+                <span>local privacy profile</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-panel" aria-label="System overview">
+            <div class="panel-glow"></div>
+            <div class="mini-window">
+              <div class="window-bar">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="window-body">
+                <div class="system-badge">Local runtime</div>
+                <ul>
+                  <li>Inference: Ollama, vLLM, SGLang, llama.cpp</li>
+                  <li>Models: local & cloud hybrid</li>
+                  <li>Memory: indexed and retrieval-aware</li>
+                  <li>Agents: research, coding, orchestration</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" class="section">
+        <div class="container">
+          <div class="section-header">
+            <span class="eyebrow">Core capabilities</span>
+            <h2>Built for autonomous, private, and modular AI workflows.</h2>
+          </div>
+
+          <div class="cards-grid">
+            <article class="feature-card">
+              <div class="icon">🔒</div>
+              <h3>Local-first deployment</h3>
+              <p>
+                Keep sensitive data on-device and reduce cloud dependence with a
+                privacy-first architecture that can operate offline.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="icon">⚙️</div>
+              <h3>Multi-engine inference</h3>
+              <p>
+                Switch between local runtimes like Ollama, vLLM, llama.cpp, and
+                MLX—or connect to providers such as OpenAI, Anthropic, and Google.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="icon">🧠</div>
+              <h3>Agentic reasoning</h3>
+              <p>
+                Build deep research agents, coding assistants, task schedulers,
+                and monitoring workflows that can take multi-step action.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="icon">📚</div>
+              <h3>Memory and retrieval</h3>
+              <p>
+                Index documents, connect external tools, and retrieve context that
+                matters when answering questions or completing tasks.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="icon">🧰</div>
+              <h3>Tool-enabled execution</h3>
+              <p>
+                Use web search, calculators, file operations, code execution, and
+                external MCP servers to move from text generation to real workflows.
+              </p>
+            </article>
+
+            <article class="feature-card">
+              <div class="icon">📈</div>
+              <h3>Optimization and learning</h3>
+              <p>
+                Track latency, energy use, compute needs, and cost to refine
+                prompts, models, and agent behavior over time.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="architecture" class="section alt">
+        <div class="container two-column">
+          <div>
+            <span class="eyebrow">System design</span>
+            <h2>A modular stack for agents, models, and runtime control.</h2>
+            <p>
+              OpenJarvis is designed as a complete local AI stack: models, inference engines,
+              memory systems, tools, and agent orchestration all fit under one configurable
+              framework. The result is a system that is adaptable for personal AI assistants,
+              research workflows, coding copilots, and autonomous task execution.
+            </p>
+          </div>
+          <div class="stack-list">
+            <div class="stack-item">
+              <span class="stack-index">01</span>
+              <div>
+                <h3>Models</h3>
+                <p>Local models plus cloud fallbacks for flexibility and cost trade-offs.</p>
+              </div>
+            </div>
+            <div class="stack-item">
+              <span class="stack-index">02</span>
+              <div>
+                <h3>Inference engines</h3>
+                <p>Choose the runtime that best matches your GPU, CPU, and latency needs.</p>
+              </div>
+            </div>
+            <div class="stack-item">
+              <span class="stack-index">03</span>
+              <div>
+                <h3>Agents</h3>
+                <p>Coordinate reasoning, tool usage, scheduling, monitoring, and task execution.</p>
+              </div>
+            </div>
+            <div class="stack-item">
+              <span class="stack-index">04</span>
+              <div>
+                <h3>Memory & tools</h3>
+                <p>Bring in documents, web context, external services, and rich execution capabilities.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="why-it-matters" class="section">
+        <div class="container">
+          <div class="section-header narrow">
+            <span class="eyebrow">Why it matters</span>
+            <h2>Private, efficient, and deeply customizable personal AI.</h2>
+          </div>
+
+          <div class="benefits-grid">
+            <div class="benefit-box">
+              <h3>Privacy</h3>
+              <p>Keep conversations and data local instead of sending every request to a remote server.</p>
+            </div>
+            <div class="benefit-box">
+              <h3>Offline access</h3>
+              <p>Run AI workloads on user-controlled hardware even when connectivity is limited or unavailable.</p>
+            </div>
+            <div class="benefit-box">
+              <h3>Cost efficiency</h3>
+              <p>Reduce reliance on costly cloud APIs while matching the right model to the right task.</p>
+            </div>
+            <div class="benefit-box">
+              <h3>Experimentation</h3>
+              <p>Mix hardware, models, agents, tools, and optimization strategies in one open ecosystem.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="callout" class="cta-section">
+        <div class="container cta-box">
+          <div>
+            <span class="eyebrow">The future is personal</span>
+            <h2>Build AI systems that stay under your control.</h2>
+          </div>
+          <a class="primary" href="https://github.com/open-jarvis/OpenJarvis" target="_blank" rel="noreferrer">Open repository</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <span>OpenJarvis</span>
+        <span>Private AI infrastructure for local-first systems.</span>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

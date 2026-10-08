@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Friday AI</title>
+    <style>
+      :root {
+        --bg: #06141d;
+        --panel: #0d1d2a;
+        --panel-2: #122633;
+        --text: #ebf8ff;
+        --muted: #a8bfd3;
+        --accent: #7fe7d2;
+        --accent-2: #73b9ff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(180deg, var(--bg), #091d2b 100%);
+        color: var(--text);
+      }
+      .container {
+        width: min(980px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 30px 0 60px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 18px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+      }
+      .brand {
+        font-weight: bold;
+        letter-spacing: 0.04em;
+      }
+      .status {
+        color: var(--accent);
+        font-size: 0.8rem;
+      }
+      .voice-controls {
+        display: flex;
+        gap: 8px;
+        margin-top: 14px;
+        flex-wrap: wrap;
+      }
+      .voice-button {
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.04);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+      .voice-button.active {
+        background: rgba(127, 231, 210, 0.18);
+        border-color: rgba(127, 231, 210, 0.4);
+      }
+      .chat {
+        margin-top: 24px;
+        background: rgba(17, 32, 45, 0.9);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 18px;
+        padding: 18px;
+      }
+      .messages {
+        min-height: 240px;
+        max-height: 420px;
+        overflow: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .bubble {
+        max-width: 80%;
+        padding: 12px 14px;
+        border-radius: 14px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+      }
+      .user { align-self: flex-end; background: linear-gradient(135deg, var(--accent-2), #93e6ff); color: #04131b; }
+      .assistant { align-self: flex-start; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); }
+      form {
+        display: flex;
+        gap: 12px;
+      }
+      .chat-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .dashboard {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+      .panel {
+        padding: 18px;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        background: rgba(17, 32, 45, 0.78);
+        min-width: 0;
+      }
+      .panel h2 { margin: 0 0 12px; font-size: 1.05rem; }
+      .panel p, .muted { color: var(--muted); font-size: 0.88rem; line-height: 1.5; }
+      .panel form { margin: 10px 0; }
+      .panel input, .panel select {
+        min-width: 0;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 9px;
+        background: #0b1c27;
+        color: var(--text);
+        padding: 10px;
+      }
+      .panel button, .mini-button {
+        padding: 8px 10px;
+        border-radius: 9px;
+        font-size: 0.82rem;
+      }
+      .panel-list { display: grid; gap: 8px; margin-top: 12px; }
+      .list-item {
+        padding: 10px;
+        border-radius: 10px;
+        background: rgba(255,255,255,0.04);
+        overflow-wrap: anywhere;
+      }
+      .list-item small { display: block; color: var(--muted); margin-top: 5px; }
+      .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+      .row > input { flex: 1; }
+      .wide { grid-column: 1 / -1; }
+      .warning { color: #ffd48b; }
+      .step { border-top: 1px solid rgba(255,255,255,0.08); padding-top: 9px; margin-top: 9px; }
+      .step .row { margin-top: 7px; }
+      .confirm-button { margin-top: 8px; background: #ffc36b; }
+      input {
+        flex: 1;
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 12px;
+        background: rgba(255,255,255,0.03);
+        color: var(--text);
+        font-size: 1rem;
+        padding: 14px 16px;
+      }
+      button {
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #04131b;
+        font-weight: bold;
+        padding: 14px 18px;
+        cursor: pointer;
+      }
+      @media (max-width: 700px) {
+        .header { flex-direction: column; gap: 8px; }
+        form { flex-direction: column; }
+        .chat-actions { display: grid; grid-template-columns: 1fr 1fr; }
+        .bubble { max-width: 100%; }
+        .dashboard { grid-template-columns: 1fr; }
+        .wide { grid-column: auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="brand">Friday AI</div>
+        <div class="status">Local-first personal assistant</div>
+      </div>
+
+      <div class="chat">
+        <div class="messages" id="messages">
+          <div class="bubble assistant">Hello! I am Friday. Ask me to calculate, read files, search, or reason locally.</div>
+        </div>
+
+        <div class="voice-controls">
+          <button type="button" id="voice-toggle" class="voice-button">🎙️ Start voice</button>
+          <button type="button" id="wake-toggle" class="voice-button">Wake phrase: off</button>
+          <button type="button" id="speak-toggle" class="voice-button">🔊 Voice reply: off</button>
+          <select id="speech-language" aria-label="Speech language">
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="hi-IN">Hindi</option>
+            <option value="es-ES">Spanish</option>
+            <option value="fr-FR">French</option>
+          </select>
+          <select id="speech-voice" aria-label="Reply voice"><option value="">System default voice</option></select>
+        </div>
+        <p class="muted">Voice input uses browser speech recognition and requires microphone permission. Depending on your browser, recognition may be processed by its speech service.</p>
+
+        <form id="chat-form">
+          <input id="prompt" type="text" placeholder="Ask Friday something..." autocomplete="off" />
+          <div class="chat-actions">
+            <button type="submit">Send</button>
+            <button type="button" id="workflow-submit">Use agents</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="dashboard" id="dashboard">
+        <section class="panel">
+          <h2>Model provider</h2>
+          <form id="settings-form">
+            <select id="provider"></select>
+            <input id="model-name" placeholder="Model name" />
+            <button type="submit">Save</button>
+          </form>
+          <p id="provider-notice" class="muted">Ollama keeps model prompts on your configured local runtime. Cloud providers receive prompts and relevant context.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Document knowledge</h2>
+          <form id="knowledge-form">
+            <input id="knowledge-path" placeholder="Path to a file or folder" required />
+            <button type="submit">Index</button>
+          </form>
+          <p class="muted">Supports TXT, Markdown, CSV, JSON, PDF, and DOCX. PDF/DOCX need optional packages.</p>
+          <div class="panel-list" id="knowledge-list"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Task planner</h2>
+          <form id="task-form">
+            <input id="task-title" placeholder="What should Friday plan?" required />
+            <button type="submit">Plan</button>
+          </form>
+          <p class="muted">Edit steps and approve each one before marking it in progress. Planning does not execute actions.</p>
+          <div class="panel-list" id="task-list"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Reminders</h2>
+          <form id="reminder-form">
+            <input id="reminder-title" placeholder="Reminder" required />
+            <input id="reminder-time" type="datetime-local" required />
+            <select id="reminder-repeat">
+              <option value="none">Once</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+            </select>
+            <button type="submit">Add</button>
+          </form>
+          <div class="panel-list" id="reminder-list"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Scheduled jobs</h2>
+          <form id="job-form">
+            <input id="job-title" placeholder="Job name" required />
+            <input id="job-prompt" placeholder="What should Friday do?" required />
+            <input id="job-time" type="datetime-local" required />
+            <select id="job-repeat">
+              <option value="none">Once</option>
+              <option value="daily">Daily</option>
+              <option value="weekly">Weekly</option>
+            </select>
+            <button type="submit">Review & schedule</button>
+          </form>
+          <p class="muted">Friday must stay running. Scheduling requires approval; scheduled jobs never execute shell commands. Cloud providers receive prompts and context.</p>
+          <div class="panel-list" id="job-list"></div>
+        </section>
+
+        <section class="panel wide">
+          <h2>Memory</h2>
+          <div class="row">
+            <input id="memory-query" placeholder="Search saved conversations and facts" />
+            <button type="button" id="memory-search">Search</button>
+            <button type="button" id="memory-clear">Clear all</button>
+          </div>
+          <div class="panel-list" id="memory-list"></div>
+        </section>
+
+        <section class="panel wide">
+          <h2>Recent agent workflows</h2>
+          <div class="panel-list" id="workflow-history"></div>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById('chat-form');
+      const input = document.getElementById('prompt');
+      const messages = document.getElementById('messages');
+      const voiceToggle = document.getElementById('voice-toggle');
+      const speakToggle = document.getElementById('speak-toggle');
+      const workflowSubmit = document.getElementById('workflow-submit');
+      const wakeToggle = document.getElementById('wake-toggle');
+      const providerSelect = document.getElementById('provider');
+      const modelInput = document.getElementById('model-name');
+      const speechLanguage = document.getElementById('speech-language');
+      const speechVoice = document.getElementById('speech-voice');
+
+      let recognition = null;
+      let isListening = false;
+      let shouldSpeak = false;
+      let wakePhraseEnabled = false;
+      let providerDefaults = {};
+      let cloudProviderActive = false;
+
+      const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[char]));
+
+      const api = async (url, options = {}) => {
+        const response = await fetch(url, {
+          headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+          ...options
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Request failed');
+        return data;
+      };
+
+      const appendMessage = (role, text) => {
+        const bubble = document.createElement('div');
+        bubble.className = `bubble ${role}`;
+        bubble.textContent = text;
+        messages.appendChild(bubble);
+        messages.scrollTop = messages.scrollHeight;
+      };
+
+      const speakText = (text) => {
+        if (!shouldSpeak || !('speechSynthesis' in window)) return;
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.05;
+        utterance.pitch = 1.1;
+        utterance.volume = 1;
+        utterance.lang = speechLanguage.value;
+        const selectedVoice = window.speechSynthesis.getVoices().find((voice) => voice.name === speechVoice.value);
+        if (selectedVoice) utterance.voice = selectedVoice;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+      };
+
+      const submitPrompt = async (message, useWorkflow = false) => {
+        const trimmed = message.trim();
+        if (!trimmed) return;
+
+        appendMessage('user', trimmed);
+        input.value = '';
+
+        try {
+          const data = await api(useWorkflow ? '/workflow' : '/chat', {
+            method: 'POST', body: JSON.stringify({ message: trimmed })
+          });
+          const reply = data.reply || 'I could not answer that right now.';
+          const bubble = appendMessage('assistant', reply);
+          if (data.requires_confirmation) addCommandApproval(bubble, data.command);
+          else speakText(reply);
+          if (useWorkflow) {
+            const history = JSON.parse(localStorage.getItem('friday-workflows') || '[]');
+            history.unshift({ task: trimmed, reply, at: new Date().toLocaleString() });
+            localStorage.setItem('friday-workflows', JSON.stringify(history.slice(0, 8)));
+            renderWorkflowHistory();
+          }
+        } catch (error) {
+          appendMessage('assistant', `Friday could not complete the request: ${error.message}`);
+        }
+      };
+
+      const addCommandApproval = (bubble, command) => {
+        const code = document.createElement('code');
+        code.textContent = command;
+        bubble.appendChild(document.createElement('br'));
+        bubble.appendChild(code);
+        const button = document.createElement('button');
+        button.className = 'confirm-button';
+        button.textContent = 'Review and run command';
+        button.addEventListener('click', async () => {
+          if (!window.confirm(`Friday will run this command on this computer:\n\n${command}\n\nContinue?`)) return;
+          button.disabled = true;
+          try {
+            const result = await api('/commands/execute', {
+              method: 'POST',
+              body: JSON.stringify({ command, confirmed: true })
+            });
+            appendMessage('assistant', result.result);
+          } catch (error) {
+            appendMessage('assistant', `Command failed: ${error.message}`);
+            button.disabled = false;
+          }
+        });
+        bubble.appendChild(button);
+      };
+
+      const renderProviderSettings = async () => {
+        const data = await api('/settings');
+        providerDefaults = Object.fromEntries(data.providers.map((item) => [item.id, item.model]));
+        providerSelect.innerHTML = data.providers.map((item) =>
+          `<option value="${escapeHtml(item.id)}" ${item.configured ? '' : 'disabled'}>${escapeHtml(item.id)}${item.configured ? '' : ' (API key missing)'}</option>`
+        ).join('');
+        providerSelect.value = data.provider;
+        modelInput.value = data.model;
+        cloudProviderActive = data.cloud_provider_active;
+        const openAiConfigured = data.providers.some((item) => item.id === 'openai' && item.configured);
+        document.getElementById('provider-notice').textContent = data.cloud_provider_active
+          ? 'Cloud model active: prompts and retrieved context are sent to the selected provider. Switch to Ollama for local inference.'
+          : openAiConfigured
+            ? 'Ollama and OpenAI-compatible endpoints can run locally. Selecting OpenAI sends prompts and retrieved context to OpenAI.'
+            : 'OpenAI requires OPENAI_API_KEY in Friday’s launch environment, then restart Friday. Keys are never saved here. Cloud models send prompts and retrieved context to their provider.';
+      };
+
+      const renderKnowledge = async () => {
+        const data = await api('/knowledge');
+        document.getElementById('knowledge-list').innerHTML = data.documents.map((doc) =>
+          `<div class="list-item">${escapeHtml(doc.name)}<small>${doc.chunks} indexed chunks</small><button class="mini-button" data-remove-document="${escapeHtml(doc.source)}">Remove index</button></div>`
+        ).join('') || '<p class="muted">No documents indexed yet.</p>';
+      };
+
+      const renderTasks = async () => {
+        const data = await api('/tasks');
+        document.getElementById('task-list').innerHTML = data.tasks.map((task) =>
+          `<div class="list-item"><strong>${escapeHtml(task.title)}</strong><small>Status: ${escapeHtml(task.status)}</small>` +
+          task.steps.map((step) =>
+            `<div class="step"><input data-step-text="${escapeHtml(task.id)}:${escapeHtml(step.id)}" value="${escapeHtml(step.text)}">` +
+            `<div class="row"><label><input type="checkbox" data-approve="${escapeHtml(task.id)}:${escapeHtml(step.id)}" ${step.approved ? 'checked' : ''}> Approved</label>` +
+            `<select data-step-status="${escapeHtml(task.id)}:${escapeHtml(step.id)}">` +
+            `<option value="pending" ${step.status === 'pending' ? 'selected' : ''}>Pending</option>` +
+            `<option value="in_progress" ${step.status === 'in_progress' ? 'selected' : ''}>In progress</option>` +
+            `<option value="done" ${step.status === 'done' ? 'selected' : ''}>Done</option></select></div></div>`
+          ).join('') +
+          `<button class="mini-button" data-delete-task="${escapeHtml(task.id)}">Delete task</button></div>`
+        ).join('') || '<p class="muted">No plans yet.</p>';
+      };
+
+      const renderReminders = async () => {
+        const data = await api('/reminders');
+        document.getElementById('reminder-list').innerHTML = data.reminders.map((item) =>
+          `<div class="list-item">${escapeHtml(item.title)}<small>${escapeHtml(new Date(item.due_at).toLocaleString())} · ${escapeHtml(item.recurrence)} · ${item.active ? 'active' : 'completed'}</small>` +
+          `<button class="mini-button" data-delete-reminder="${escapeHtml(item.id)}">Delete</button></div>`
+        ).join('') || '<p class="muted">No reminders yet.</p>';
+      };
+
+      const renderJobs = async () => {
+        const data = await api('/jobs');
+        document.getElementById('job-list').innerHTML = data.jobs.map((job) =>
+          `<div class="list-item"><strong>${escapeHtml(job.title)}</strong>` +
+          `<small>${escapeHtml(new Date(job.run_at).toLocaleString())} · ${escapeHtml(job.recurrence)} · ${escapeHtml(job.status)}</small>` +
+          (job.last_result ? `<details><summary>Last result</summary><p>${escapeHtml(job.last_result)}</p></details>` : '') +
+          `<button class="mini-button" data-delete-job="${escapeHtml(job.id)}">Delete job</button></div>`
+        ).join('') || '<p class="muted">No scheduled jobs.</p>';
+      };
+
+      const renderMemory = async () => {
+        const query = encodeURIComponent(document.getElementById('memory-query').value);
+        const data = await api(`/memory?q=${query}`);
+        document.getElementById('memory-list').innerHTML = data.entries.map((entry) =>
+          `<div class="list-item"><small>${escapeHtml(entry.role)} · ${escapeHtml(entry.timestamp)}</small>` +
+          `<textarea data-memory-content="${entry.index}" rows="3">${escapeHtml(entry.content)}</textarea>` +
+          `<button class="mini-button" data-save-memory="${entry.index}">Save edit</button> ` +
+          `<button class="mini-button" data-delete-memory="${entry.index}">Delete</button></div>`
+        ).join('') || '<p class="muted">No matching memory entries.</p>';
+      };
+
+      const renderWorkflowHistory = () => {
+        const history = JSON.parse(localStorage.getItem('friday-workflows') || '[]');
+        document.getElementById('workflow-history').innerHTML = history.map((item) =>
+          `<div class="list-item"><strong>${escapeHtml(item.task)}</strong><small>${escapeHtml(item.at)}</small><details><summary>Review output</summary><p>${escapeHtml(item.reply)}</p></details></div>`
+        ).join('') || '<p class="muted">Run an agent workflow to see its review history here.</p>';
+      };
+
+      const refreshDashboard = async () => {
+        const results = await Promise.allSettled([
+          renderProviderSettings(), renderKnowledge(), renderTasks(), renderReminders(), renderJobs(), renderMemory()
+        ]);
+        const failed = results.find((item) => item.status === 'rejected');
+        if (failed) appendMessage('assistant', `Dashboard refresh failed: ${failed.reason.message}`);
+        renderWorkflowHistory();
+      };
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        submitPrompt(input.value);
+      });
+
+      workflowSubmit.addEventListener('click', () => {
+        submitPrompt(input.value, true);
+      });
+
+      providerSelect.addEventListener('change', () => {
+        modelInput.value = providerDefaults[providerSelect.value] || '';
+      });
+
+      document.getElementById('settings-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        try {
+          const data = await api('/settings', {
+            method: 'POST',
+            body: JSON.stringify({ provider: providerSelect.value, model: modelInput.value })
+          });
+          await renderProviderSettings();
+          appendMessage('assistant', `Model settings saved: ${data.provider} · ${data.model}`);
+        } catch (error) { appendMessage('assistant', `Could not save model settings: ${error.message}`); }
+      });
+
+      document.getElementById('knowledge-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        try {
+          const data = await api('/knowledge/index', {
+            method: 'POST',
+            body: JSON.stringify({ path: document.getElementById('knowledge-path').value })
+          });
+          appendMessage('assistant', `Indexed ${data.indexed.length} document(s).`);
+          await renderKnowledge();
+        } catch (error) { appendMessage('assistant', `Indexing failed: ${error.message}`); }
+      });
+
+      document.getElementById('task-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        try {
+          await api('/tasks', {
+            method: 'POST',
+            body: JSON.stringify({ title: document.getElementById('task-title').value })
+          });
+          document.getElementById('task-title').value = '';
+          await renderTasks();
+        } catch (error) { appendMessage('assistant', `Planning failed: ${error.message}`); }
+      });
+
+      document.getElementById('reminder-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        try {
+          const due = new Date(document.getElementById('reminder-time').value);
+          await api('/reminders', {
+            method: 'POST',
+            body: JSON.stringify({
+              title: document.getElementById('reminder-title').value,
+              due_at: due.toISOString(),
+              recurrence: document.getElementById('reminder-repeat').value
+            })
+          });
+          document.getElementById('reminder-title').value = '';
+          await renderReminders();
+        } catch (error) { appendMessage('assistant', `Reminder could not be saved: ${error.message}`); }
+      });
+
+      document.getElementById('job-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const title = document.getElementById('job-title').value.trim();
+        const prompt = document.getElementById('job-prompt').value.trim();
+        const due = new Date(document.getElementById('job-time').value);
+        const recurrence = document.getElementById('job-repeat').value;
+        const warning = cloudProviderActive
+          ? '\n\nThis provider sends the scheduled prompt and relevant context to its cloud service.'
+          : '';
+        if (!window.confirm(`Approve Friday to run this prompt on schedule?\n\n${title}\n${prompt}\n\nRepeats: ${recurrence}${warning}`)) return;
+        try {
+          await api('/jobs', {
+            method: 'POST',
+            body: JSON.stringify({
+              title, prompt, run_at: due.toISOString(), recurrence, approved: true
+            })
+          });
+          document.getElementById('job-title').value = '';
+          document.getElementById('job-prompt').value = '';
+          await renderJobs();
+        } catch (error) { appendMessage('assistant', `Job could not be scheduled: ${error.message}`); }
+      });
+
+      document.getElementById('memory-search').addEventListener('click', () => renderMemory().catch((error) => appendMessage('assistant', error.message)));
+      document.getElementById('memory-clear').addEventListener('click', async () => {
+        if (!window.confirm('Delete all saved memory? This cannot be undone.')) return;
+        try {
+          await api('/memory/clear', { method: 'POST', body: '{}' });
+          await renderMemory();
+        } catch (error) { appendMessage('assistant', `Memory could not be cleared: ${error.message}`); }
+      });
+
+      document.getElementById('dashboard').addEventListener('click', async (event) => {
+        const target = event.target;
+        try {
+          if (target.dataset.removeDocument) {
+            await api(`/knowledge?source=${encodeURIComponent(target.dataset.removeDocument)}`, { method: 'DELETE' });
+            await renderKnowledge();
+          } else if (target.dataset.deleteTask) {
+            await api(`/tasks/${target.dataset.deleteTask}`, { method: 'DELETE' });
+            await renderTasks();
+          } else if (target.dataset.deleteReminder) {
+            await api(`/reminders/${target.dataset.deleteReminder}`, { method: 'DELETE' });
+            await renderReminders();
+          } else if (target.dataset.deleteJob) {
+            await api(`/jobs/${target.dataset.deleteJob}`, { method: 'DELETE' });
+            await renderJobs();
+          } else if (target.dataset.saveMemory !== undefined) {
+            const index = target.dataset.saveMemory;
+            const content = document.querySelector(`[data-memory-content="${index}"]`).value;
+            await api('/memory', { method: 'PUT', body: JSON.stringify({ index, content }) });
+          } else if (target.dataset.deleteMemory !== undefined) {
+            await api(`/memory?index=${target.dataset.deleteMemory}`, { method: 'DELETE' });
+            await renderMemory();
+          }
+        } catch (error) { appendMessage('assistant', `Action failed: ${error.message}`); }
+      });
+
+      document.getElementById('dashboard').addEventListener('change', async (event) => {
+        const target = event.target;
+        try {
+          if (target.dataset.approve) {
+            const [taskId, stepId] = target.dataset.approve.split(':');
+            await api(`/tasks/${taskId}/steps/${stepId}`, {
+              method: 'PUT',
+              body: JSON.stringify({ approved: target.checked })
+            });
+          } else if (target.dataset.stepStatus) {
+            const [taskId, stepId] = target.dataset.stepStatus.split(':');
+            await api(`/tasks/${taskId}/steps/${stepId}`, {
+              method: 'PUT',
+              body: JSON.stringify({ status: target.value })
+            });
+            await renderTasks();
+          }
+        } catch (error) {
+          appendMessage('assistant', `Step update failed: ${error.message}`);
+          await renderTasks();
+        }
+      });
+
+      document.getElementById('dashboard').addEventListener('change', async (event) => {
+        const target = event.target;
+        if (!target.dataset.stepText) return;
+        const [taskId, stepId] = target.dataset.stepText.split(':');
+        try {
+          await api(`/tasks/${taskId}/steps/${stepId}`, {
+            method: 'PUT',
+            body: JSON.stringify({ text: target.value })
+          });
+        } catch (error) { appendMessage('assistant', `Step edit failed: ${error.message}`); }
+      });
+
+      const pollReminders = async () => {
+        try {
+          const data = await api('/reminders/due');
+          for (const reminder of data.reminders) {
+            appendMessage('assistant', `Reminder: ${reminder.title}`);
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Friday reminder', { body: reminder.title });
+            }
+            await api(`/reminders/${reminder.id}/ack`, { method: 'POST', body: '{}' });
+          }
+          if (data.reminders.length) await renderReminders();
+        } catch (error) { console.error('Reminder check failed:', error); }
+      };
+
+      const pollJobs = async () => {
+        try {
+          const data = await api('/jobs');
+          const seen = new Set(JSON.parse(localStorage.getItem('friday-job-runs') || '[]'));
+          for (const job of data.jobs) {
+            if (job.last_run_at && !seen.has(job.last_run_at)) {
+              seen.add(job.last_run_at);
+              appendMessage('assistant', `Scheduled job finished: ${job.title}\n${job.last_result}`);
+              if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(`Friday finished: ${job.title}`, { body: job.last_result.slice(0, 180) });
+              }
+            }
+          }
+          localStorage.setItem('friday-job-runs', JSON.stringify([...seen].slice(-100)));
+          await renderJobs();
+        } catch (error) { console.error('Scheduled job check failed:', error); }
+      };
+
+      if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+        const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognitionCtor();
+        recognition.lang = speechLanguage.value;
+        recognition.interimResults = false;
+        recognition.continuous = false;
+
+        recognition.onstart = () => {
+          isListening = true;
+          voiceToggle.classList.add('active');
+          voiceToggle.textContent = '🎙️ Listening...';
+        };
+
+        recognition.onend = () => {
+          isListening = false;
+          voiceToggle.classList.remove('active');
+          voiceToggle.textContent = wakePhraseEnabled ? '🎙️ Wake listening paused' : '🎙️ Start voice';
+          if (wakePhraseEnabled) {
+            window.setTimeout(() => {
+              if (wakePhraseEnabled && !isListening) {
+                try { recognition.start(); } catch (error) { console.warn('Wake phrase restart failed:', error); }
+              }
+            }, 500);
+          }
+        };
+
+        recognition.onresult = (event) => {
+          let transcript = event.results[0][0].transcript.trim();
+          if (wakePhraseEnabled) {
+            const wakeMatch = transcript.match(/\b(?:hey|hi)\s+friday\b[:,]?\s*/i);
+            if (!wakeMatch) return;
+            transcript = transcript.slice(wakeMatch.index + wakeMatch[0].length).trim();
+            if (!transcript) {
+              speakText('I’m listening. What can I help with?');
+              return;
+            }
+          }
+          if (transcript) {
+            input.value = transcript;
+            submitPrompt(transcript);
+          }
+        };
+      } else {
+        voiceToggle.disabled = true;
+        voiceToggle.textContent = '🎙️ Browser voice unsupported';
+      }
+
+      voiceToggle.addEventListener('click', () => {
+        if (!recognition) return;
+        if (isListening) {
+          recognition.stop();
+          return;
+        }
+        wakePhraseEnabled = false;
+        wakeToggle.classList.remove('active');
+        wakeToggle.textContent = 'Wake phrase: off';
+        recognition.lang = speechLanguage.value;
+        recognition.continuous = false;
+        try { recognition.start(); } catch (error) { appendMessage('assistant', `Could not start microphone: ${error.message}`); }
+      });
+
+      wakeToggle.addEventListener('click', () => {
+        if (!recognition) return;
+        wakePhraseEnabled = !wakePhraseEnabled;
+        wakeToggle.classList.toggle('active', wakePhraseEnabled);
+        wakeToggle.textContent = wakePhraseEnabled ? 'Wake phrase: on' : 'Wake phrase: off';
+        recognition.lang = speechLanguage.value;
+        recognition.continuous = wakePhraseEnabled;
+        if (wakePhraseEnabled && !isListening) {
+          try { recognition.start(); } catch (error) { appendMessage('assistant', `Could not start wake listening: ${error.message}`); }
+        } else if (!wakePhraseEnabled && isListening) {
+          recognition.stop();
+        }
+      });
+
+      speakToggle.addEventListener('click', () => {
+        shouldSpeak = !shouldSpeak;
+        speakToggle.classList.toggle('active', shouldSpeak);
+        speakToggle.textContent = shouldSpeak ? '🔊 Voice reply: on' : '🔊 Voice reply: off';
+        if (!shouldSpeak && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+      });
+
+      speechLanguage.addEventListener('change', () => {
+        if (recognition) recognition.lang = speechLanguage.value;
+        localStorage.setItem('friday-speech-language', speechLanguage.value);
+      });
+      speechLanguage.value = localStorage.getItem('friday-speech-language') || 'en-US';
+      const loadVoices = () => {
+        if (!('speechSynthesis' in window)) return;
+        const voices = window.speechSynthesis.getVoices();
+        speechVoice.innerHTML = '<option value="">System default voice</option>' + voices.map((voice) =>
+          `<option value="${escapeHtml(voice.name)}">${escapeHtml(voice.name)} (${escapeHtml(voice.lang)})</option>`
+        ).join('');
+        speechVoice.value = localStorage.getItem('friday-speech-voice') || '';
+      };
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+      }
+      speechVoice.addEventListener('change', () => localStorage.setItem('friday-speech-voice', speechVoice.value));
+
+      refreshDashboard().catch((error) => appendMessage('assistant', `Dashboard could not load: ${error.message}`));
+      renderWorkflowHistory();
+      pollReminders();
+      pollJobs();
+      window.setInterval(pollReminders, 30000);
+      window.setInterval(pollJobs, 10000);
+    </script>
+  </body>
+</html>
